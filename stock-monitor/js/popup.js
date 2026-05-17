@@ -276,12 +276,13 @@ async function loadHistory() {
     const productSummary = entry.products.map(p => {
       const inStock = (p.stocks || []).filter(s => s.inStock).length;
       const total = (p.stocks || []).length;
-      return `${p.name}: ${inStock}/${total}`;
-    }).join(' | ');
+      const shortName = p.name.replace(/（[^）]*）/, '');
+      return `${shortName}: ${inStock}/${total}`;
+    }).join('\n');
 
     div.innerHTML = `
       <div class="history-time">${entry.time}</div>
-      <div class="history-content">${productSummary}</div>
+      <pre class="history-content">${productSummary}</pre>
     `;
     historyList.appendChild(div);
   }
