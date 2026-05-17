@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>大魔王库存监控</title>
+  <link rel="stylesheet" href="css/popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📦 大魔王库存监控</h1>
+      <p class="subtitle">Daimaoh Stock Monitor</p>
+    </header>
+
+    <div class="url-input-section">
+      <label for="url-input">输入商品页面URL:</label>
+      <div class="url-input-row">
+        <input type="text" id="url-input" placeholder="https://daimaoh.co.jp/item5457.html">
+        <button id="check-url-btn" class="btn-small">检查</button>
+      </div>
+    </div>
+
+    <div id="loading" class="loading" style="display:none;">
+      <div class="spinner"></div>
+      <p>正在抓取库存数据...</p>
+    </div>
+
+    <div id="error" class="error" style="display:none;">
+      <p>⚠️ <span id="error-message"></span></p>
+    </div>
+
+    <div id="results" class="results" style="display:none;">
+      <div id="product-list"></div>
+    </div>
+
+    <div class="preset-products">
+      <h4>快速检查:</h4>
+      <div class="preset-buttons">
+        <button class="preset-btn" data-url="https://daimaoh.co.jp/item5457.html">Muses Fillo</button>
+        <button class="preset-btn" data-url="https://daimaoh.co.jp/item1663.html">Venus Real</button>
+        <button class="preset-btn" data-url="https://daimaoh.co.jp/item1608.html">Venus Clone</button>
+        <button class="preset-btn" data-url="https://daimaoh.co.jp/item1662.html">Venus Cross</button>
+      </div>
+    </div>
+
+    <footer>
+      <button id="refresh-btn" class="btn">🔄 刷新全部</button>
+      <button id="toggle-history" class="btn btn-secondary">📋 历史</button>
+    </footer>
+
+    <div id="history" class="history" style="display:none;">
+      <h3>📋 监控历史</h3>
+      <div id="history-list"></div>
+      <button id="clear-history" class="btn-text">🗑️ 清除历史</button>
+    </div>
+  </div>
+
+  <script src="js/popup.js"></script>
+</body>
+</html>

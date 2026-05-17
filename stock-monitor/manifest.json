@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "大魔王库存监控",
+  "version": "1.0.1",
+  "description": "监控大魔王网站商品库存，在任意页面即可查看所有商品库存情况",
+  "permissions": [
+    "storage",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://daimaoh.co.jp/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

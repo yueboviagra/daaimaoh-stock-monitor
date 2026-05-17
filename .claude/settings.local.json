@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:daimaoh.co.jp)",
+      "Bash(node js/generate-icons.js)",
+      "Bash(python3 generate_icons.py)",
+      "Bash(curl -s \"https://daimaoh.co.jp/item5457.html\")",
+      "Bash(curl -s \"https://daimaoh.co.jp/item1663.html\")",
+      "Bash(curl -s \"https://daimaoh.co.jp/item1608.html\")",
+      "Bash(curl -s \"https://daimaoh.co.jp/item1662.html\")",
+      "Bash(claude --version)",
+      "Bash(curl -s \"https://daimaoh.co.jp/\")",
+      "Bash(curl -sI \"https://daimaoh.co.jp/favicon.ico\")",
+      "Bash(curl -s -o /Users/xujunwei/Movies/daimaoh/stock-monitor/icons/icon128.png \"https://daimaoh.co.jp/favicon.ico\")",
+      "Bash(cp /Users/xujunwei/Movies/daimaoh/stock-monitor/icons/icon128.png /Users/xujunwei/Movies/daimaoh/stock-monitor/icons/icon16.png)",
+      "Bash(cp /Users/xujunwei/Movies/daimaoh/stock-monitor/icons/icon128.png /Users/xujunwei/Movies/daimaoh/stock-monitor/icons/icon48.png)",
+      "Bash(gh auth *)",
+      "Bash(brew list *)",
+      "Bash(brew install *)"
+    ]
+  }
+}
