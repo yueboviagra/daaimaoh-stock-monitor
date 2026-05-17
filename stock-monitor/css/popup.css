@@ -252,19 +252,27 @@ h1 {
   margin-bottom: 8px;
 }
 
-.preset-buttons {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+.preset-section {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.preset-label {
+  font-size: 11px;
+  color: #666;
+  min-width: 50px;
 }
 
 .preset-btn {
-  padding: 10px;
+  padding: 8px 12px;
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 6px;
   background: rgba(255,255,255,0.03);
   color: #ccc;
-  font-size: 12px;
+  font-size: 11px;
   cursor: pointer;
   transition: all 0.2s;
 }

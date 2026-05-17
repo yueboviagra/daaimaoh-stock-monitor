@@ -4,10 +4,25 @@ const STORAGE_KEY = 'stock_history';
 
 // 监控的商品列表
 const PRODUCTS = [
+  // Muses 系列
   { url: 'https://daimaoh.co.jp/item5457.html', name: 'Muses Fillo（ミューゼス・フィロ）' },
+  { url: 'https://daimaoh.co.jp/item5458.html', name: 'Muses Kokalo（ミューゼス・コカロ）' },
+  { url: 'https://daimaoh.co.jp/item5456.html', name: 'Muses Arkhe（ミューゼス・アルケー）' },
+  // Venus 系列
   { url: 'https://daimaoh.co.jp/item1663.html', name: 'Venus Real（ヴィーナス・リアル）' },
   { url: 'https://daimaoh.co.jp/item1608.html', name: 'Venus Clone（ヴィーナス・クローン）' },
-  { url: 'https://daimaoh.co.jp/item1662.html', name: 'Venus Cross（ヴィーナス・クロス）' }
+  { url: 'https://daimaoh.co.jp/item1662.html', name: 'Venus Cross（ヴィーナス・クロス）' },
+  // Virgo 系列
+  { url: 'https://daimaoh.co.jp/item12261.html', name: 'Virgo Phantasma（ヴァルゴ・ファンタズマ）' },
+  { url: 'https://daimaoh.co.jp/item12262.html', name: 'Virgo Veritas（ヴァルゴ・ヴェリタス）' },
+  { url: 'https://daimaoh.co.jp/item12263.html', name: 'Virgo Liber（ヴァルゴ・リベル）' },
+  // Lilith 系列
+  { url: 'https://daimaoh.co.jp/item2285.html', name: 'Lilith Spiral-wave（リリス・スパイラルウェーブ）' },
+  { url: 'https://daimaoh.co.jp/item2286.html', name: 'Lilith Spiral-dots（リリス・スパイラルドッツ）' },
+  { url: 'https://daimaoh.co.jp/item2287.html', name: 'Lilith Uterus（リリス・ウテルス）' },
+  // 其他
+  { url: 'https://daimaoh.co.jp/item1824.html', name: 'Quty Tits（キューティーティッツ）' },
+  { url: 'https://daimaoh.co.jp/item3420.html', name: 'TSUBO2.0 type.B（壺2.0・タイプB）' }
 ];
 
 // DOM元素
@@ -51,8 +66,6 @@ async function init() {
     });
   });
   await loadHistory();
-  // 打开插件时自动检查所有商品库存
-  checkProducts(PRODUCTS);
 }
 
 function extractNameFromUrl(url) {
