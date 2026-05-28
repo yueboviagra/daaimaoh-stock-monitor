@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>大魔王库存监控</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <!-- 顶部导航 -->
+  <nav class="navbar">
+    <h1>🛒 大魔王库存监控</h1>
+    <div class="nav-actions">
+      <span class="time-info" id="last-check-time">载入中...</span>
+      <span class="time-info" id="next-schedule"></span>
+      <button class="btn btn-outline" id="refresh-btn">🔄 刷新页面</button>
+      <button class="btn btn-primary" id="scrape-btn">▶ 立即检查</button>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- 加载状态 -->
+    <div class="status-bar hidden" id="loading-bar">
+      <div class="spinner"></div>
+      <span id="loading-text">正在检查库存...</span>
+    </div>
+
+    <!-- 摘要行 -->
+    <div class="summary-row" id="summary-row">
+      <div class="summary-card">
+        <div class="label">监控商品</div>
+        <div class="value" id="total-products">-</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">有库存商品</div>
+        <div class="value" id="in-stock-products" style="color: var(--green)">-</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">缺货商品</div>
+        <div class="value" id="out-stock-products" style="color: var(--red)">-</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">检查时间</div>
+        <div class="value" id="check-time" style="font-size: 1rem;">-</div>
+      </div>
+    </div>
+
+    <!-- 库存变化 -->
+    <div class="changes-section hidden" id="changes-section">
+      <h3 style="margin-bottom: 12px;">📊 库存变化</h3>
+      <div id="changes-list"></div>
+    </div>
+
+    <!-- 商品列表 -->
+    <div id="product-area">
+      <p style="color: var(--text-muted);">正在加载数据...</p>
+    </div>
+
+    <!-- 历史记录 -->
+    <div class="history-section">
+      <h3 style="margin-bottom: 12px;">📋 检查历史</h3>
+      <table class="history-table" id="history-table">
+        <thead>
+          <tr>
+            <th>时间</th>
+            <th>状态</th>
+            <th>记录数</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="history-body">
+          <tr><td colspan="4" style="color: var(--text-muted);">载入中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // 页面加载时获取数据
+    document.addEventListener('DOMContentLoaded', () => {
+      loadStatus();
+      loadHistory();
+      loadSchedule();
+      // 每 60 秒自动刷新
+      setInterval(loadStatus, 60000);
+      setInterval(loadSchedule, 60000);
+
+      document.getElementById('scrape-btn').addEventListener('click', triggerScrape);
+      document.getElementById('refresh-btn').addEventListener('click', () => {
+        loadStatus();
+        loadHistory();
+      });
+    });
+
+    async function loadStatus() {
+      try {
+        const resp = await fetch('/api/status');
+        if (!resp.ok) {
+          document.getElementById('product-area').innerHTML =
+            '<p style="color: var(--text-muted);">暂无数据，请点击「立即检查」开始首次抓取</p>';
+          return;
+        }
+        const data = await resp.json();
+        renderStatus(data);
+      } catch (e) {
+        console.error('加载状态失败:', e);
+      }
+    }
+
+    async function loadHistory() {
+      try {
+        const resp = await fetch('/api/history?limit=20');
+        const data = await resp.json();
+        renderHistory(data);
+      } catch (e) {
+        console.error('加载历史失败:', e);
+      }
+    }
+
+    async function loadSchedule() {
+      try {
+        const resp = await fetch('/api/schedule');
+        const data = await resp.json();
+        if (data.next_run) {
+          const d = new Date(data.next_run);
+          document.getElementById('next-schedule').textContent =
+            '下次检查: ' + d.toLocaleString('ja-JP');
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    async function triggerScrape() {
+      const btn = document.getElementById('scrape-btn');
+      btn.disabled = true;
+      btn.textContent = '⏳ 检查中...';
+      showLoading(true, '正在检查 14 个商品库存...');
+
+      try {
+        const resp = await fetch('/api/scrape', { method: 'POST' });
+        const data = await resp.json();
+        showLoading(false);
+        btn.textContent = '▶ 立即检查';
+        btn.disabled = false;
+        await loadStatus();
+        await loadHistory();
+        await loadSchedule();
+      } catch (e) {
+        showLoading(false);
+        btn.textContent = '▶ 立即检查';
+        btn.disabled = false;
+        alert('抓取失败: ' + e.message);
+      }
+    }
+
+    function showLoading(show, text) {
+      const bar = document.getElementById('loading-bar');
+      bar.classList.toggle('hidden', !show);
+      if (text) document.getElementById('loading-text').textContent = text;
+    }
+
+    function renderStatus(data) {
+      // 更新摘要
+      const products = data.products || [];
+      const total = products.length;
+      const hasStock = products.filter(p => p.has_stock).length;
+      const noStock = total - hasStock;
+
+      document.getElementById('total-products').textContent = total;
+      document.getElementById('in-stock-products').textContent = hasStock;
+      document.getElementById('out-stock-products').textContent = noStock;
+
+      const d = new Date(data.checked_at);
+      document.getElementById('check-time').textContent =
+        d.toLocaleString('ja-JP');
+      document.getElementById('last-check-time').textContent =
+        '上次检查: ' + d.toLocaleString('ja-JP');
+
+      // 按系列分组渲染
+      const seriesOrder = ['Muses', 'Venus', 'Virgo', 'Lilith', 'Other'];
+      const grouped = {};
+      for (const s of seriesOrder) grouped[s] = [];
+      for (const p of products) {
+        const series = p.series || 'Other';
+        if (!grouped[series]) grouped[series] = [];
+        grouped[series].push(p);
+      }
+
+      let html = '';
+      for (const [series, items] of Object.entries(grouped)) {
+        if (items.length === 0) continue;
+        html += `<div class="series-group">
+          <h3 class="series-title">${series} 系列</h3>
+          <div class="product-grid">`;
+        for (const p of items) {
+          html += renderProductCard(p);
+        }
+        html += '</div></div>';
+      }
+
+      document.getElementById('product-area').innerHTML = html;
+
+      // 加载变化
+      loadChanges();
+    }
+
+    function renderProductCard(p) {
+      const hasError = !p.stocks || p.stocks.length === 0;
+      if (hasError) {
+        return `
+          <div class="product-card error-card">
+            <div class="card-header">
+              <span class="product-name">${esc(p.name)}</span>
+              <span style="color: var(--red); font-size: 0.8rem;">获取失败</span>
+            </div>
+            <div class="error-detail">未能获取库存数据</div>
+          </div>`;
+      }
+
+      const variantsHtml = p.stocks.map(s => `
+        <span class="variant-tag ${s.in_stock ? 'in-stock-tag' : 'out-of-stock-tag'}">
+          <span class="dot ${s.in_stock ? 'in-stock' : 'out-of-stock'}"></span>
+          ${esc(s.variant)}
+        </span>
+      `).join('');
+
+      return `
+        <div class="product-card">
+          <div class="card-header">
+            <span class="product-name">
+              <a href="${esc(p.url)}" target="_blank">${esc(p.name)}</a>
+            </span>
+            <span class="stock-summary ${p.has_stock ? 'has-stock' : 'no-stock'}">${p.summary}</span>
+          </div>
+          <div class="variants">${variantsHtml}</div>
+        </div>`;
+    }
+
+    async function loadChanges() {
+      try {
+        const resp = await fetch('/api/changes');
+        const changes = await resp.json();
+        if (changes.length === 0) return;
+
+        document.getElementById('changes-section').classList.remove('hidden');
+        document.getElementById('changes-list').innerHTML = changes.map(c => `
+          <div class="change-item">
+            <strong>${esc(c.product_name)}</strong> - ${esc(c.variant)}:
+            <span style="color: ${c.from_stock ? 'var(--green)' : 'var(--red)'};">
+              ${c.from_stock ? '在庫あり' : '在庫なし'}
+            </span>
+            <span class="arrow">→</span>
+            <span style="color: ${c.to_stock ? 'var(--green)' : 'var(--red)'};">
+              ${c.to_stock ? '在庫あり' : '在庫なし'}
+            </span>
+          </div>
+        `).join('');
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    function renderHistory(data) {
+      const tbody = document.getElementById('history-body');
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="color: var(--text-muted);">暂无记录</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = data.map(h => {
+        const d = new Date(h.checked_at);
+        const statusClass = h.status === 'success' ? 'var(--green)' :
+                            h.status === 'partial' ? 'orange' : 'var(--red)';
+        return `<tr>
+          <td>${d.toLocaleString('ja-JP')}</td>
+          <td style="color: ${statusClass}">${h.status}</td>
+          <td>${h.record_count} 条</td>
+          <td><a href="/history/${h.id}" style="color: var(--accent);">详情</a></td>
+        </tr>`;
+      }).join('');
+    }
+
+    function esc(text) {
+      const el = document.createElement('span');
+      el.textContent = text || '';
+      return el.innerHTML;
+    }
+  </script>
+</body>
+</html>

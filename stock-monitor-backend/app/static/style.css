@@ -1,0 +1,293 @@
+/* 大魔王库存监控 - 仪表盘样式 */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #1a1a2e;
+  --bg-card: #16213e;
+  --bg-surface: #0f3460;
+  --text: #e0e0e0;
+  --text-muted: #888;
+  --accent: #e94560;
+  --green: #00c853;
+  --red: #ff1744;
+  --border: #2a2a4a;
+  --radius: 8px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* 顶部导航 */
+.navbar {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.navbar h1 {
+  font-size: 1.4rem;
+  color: var(--accent);
+}
+
+.nav-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.nav-actions .time-info {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* 按钮 */
+.btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover { background: #ff6b81; }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.btn-outline:hover { background: var(--bg-surface); }
+
+/* 容器 */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* 摘要卡片 */
+.summary-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.summary-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 24px;
+  flex: 1;
+  min-width: 150px;
+}
+
+.summary-card .label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.summary-card .value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+/* 加载/错误状态 */
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.status-bar .spinner {
+  width: 16px; height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.hidden { display: none !important; }
+
+/* 系列分组 */
+.series-group {
+  margin-bottom: 32px;
+}
+
+.series-title {
+  font-size: 1.1rem;
+  color: var(--accent);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* 商品卡片网格 */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+}
+
+.product-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  transition: border-color 0.2s;
+}
+
+.product-card:hover { border-color: var(--accent); }
+
+.product-card .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.product-card .product-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  flex: 1;
+}
+
+.product-card .product-name a {
+  color: var(--text);
+  text-decoration: none;
+}
+.product-card .product-name a:hover { color: var(--accent); }
+
+.product-card .stock-summary {
+  font-size: 0.85rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.product-card .stock-summary.has-stock {
+  background: rgba(0, 200, 83, 0.2);
+  color: var(--green);
+}
+
+.product-card .stock-summary.no-stock {
+  background: rgba(255, 23, 68, 0.2);
+  color: var(--red);
+}
+
+/* 规格列表 */
+.variants {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.variant-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  font-size: 0.82rem;
+  background: var(--bg-surface);
+}
+
+.variant-tag .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+
+.variant-tag .dot.in-stock { background: var(--green); }
+.variant-tag .dot.out-of-stock { background: var(--red); }
+
+.variant-tag.in-stock-tag { border: 1px solid rgba(0, 200, 83, 0.3); }
+.variant-tag.out-of-stock-tag { border: 1px solid rgba(255, 23, 68, 0.3); }
+
+/* 错误卡片 */
+.product-card.error-card {
+  border-color: var(--red);
+  opacity: 0.7;
+}
+
+.product-card .error-detail {
+  font-size: 0.8rem;
+  color: var(--red);
+  margin-top: 8px;
+}
+
+/* 变化记录 */
+.changes-section {
+  margin-bottom: 24px;
+}
+
+.change-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+}
+
+.change-item .arrow { color: var(--accent); margin: 0 6px; }
+
+/* 历史记录 */
+.history-section { margin-top: 32px; }
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.history-table th,
+.history-table td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.history-table th {
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+.history-table tr:hover { background: var(--bg-surface); }
+
+/* 响应式 */
+@media (max-width: 600px) {
+  .navbar { padding: 12px 16px; }
+  .container { padding: 16px; }
+  .product-grid { grid-template-columns: 1fr; }
+  .summary-row { flex-direction: column; }
+}

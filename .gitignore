@@ -2,7 +2,17 @@
 .DS_Store
 .DS_Store?
 ._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+*.DS_Store
+
+# 其他常用
+node_modules/
+dist/
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.db
+venv/
+.venv/

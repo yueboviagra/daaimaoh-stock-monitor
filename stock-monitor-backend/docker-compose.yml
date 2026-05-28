@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  stock-monitor:
+    image: daimaoh-stock-monitor:latest
+    container_name: daimaoh-stock-monitor
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - TZ=Asia/Tokyo
+      - LOG_LEVEL=info
+    restart: unless-stopped
+    mem_limit: 800M
+    memswap_limit: 1G

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>检查详情 - 大魔王库存监控</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    .back-nav {
+      margin-bottom: 24px;
+    }
+    .back-nav a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 1rem;
+    }
+    .back-nav a:hover {
+      text-decoration: underline;
+    }
+    .snapshot-meta {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+      padding: 16px 20px;
+      background: var(--card-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .meta-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .meta-value {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    .status-success { color: var(--green); }
+    .status-partial { color: orange; }
+    .status-error { color: var(--red); }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <h1>🛒 大魔王库存监控</h1>
+    <div class="nav-actions">
+      <a href="/" class="btn btn-outline" style="text-decoration:none;">← 返回仪表盘</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="back-nav">
+      <a href="/">← 返回仪表盘</a>
+    </div>
+
+    <h2 style="margin-bottom: 16px;">📋 检查详情</h2>
+
+    <!-- 快照元信息 -->
+    <div class="snapshot-meta" id="snapshot-meta">
+      <div class="meta-item">
+        <span class="meta-label">检查时间</span>
+        <span class="meta-value" id="meta-time">-</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">状态</span>
+        <span class="meta-value" id="meta-status">-</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">记录数</span>
+        <span class="meta-value" id="meta-count">-</span>
+      </div>
+      <div class="meta-item" id="meta-error-wrap" style="display:none;">
+        <span class="meta-label">错误信息</span>
+        <span class="meta-value" id="meta-error" style="color: var(--red); font-size: 0.9rem;">-</span>
+      </div>
+    </div>
+
+    <!-- 商品列表 -->
+    <div id="product-area">
+      <p style="color: var(--text-muted);">正在加载数据...</p>
+    </div>
+  </div>
+
+  <script>
+    const snapshotId = window.location.pathname.split('/').filter(Boolean).pop();
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadDetail();
+    });
+
+    async function loadDetail() {
+      try {
+        const resp = await fetch('/api/history/' + snapshotId);
+        if (!resp.ok) {
+          document.getElementById('product-area').innerHTML =
+            '<p style="color: var(--red);">快照不存在或加载失败</p>';
+          return;
+        }
+        const data = await resp.json();
+        renderDetail(data);
+      } catch (e) {
+        document.getElementById('product-area').innerHTML =
+          '<p style="color: var(--red);">加载失败: ' + esc(e.message) + '</p>';
+      }
+    }
+
+    function renderDetail(data) {
+      // 元信息
+      const d = new Date(data.checked_at);
+      document.getElementById('meta-time').textContent = d.toLocaleString('ja-JP');
+
+      const statusMap = {
+        success: { text: '✅ 全部成功', cls: 'status-success' },
+        partial: { text: '⚠️ 部分成功', cls: 'status-partial' },
+        error: { text: '❌ 全部失败', cls: 'status-error' },
+      };
+      const st = statusMap[data.status] || { text: data.status, cls: '' };
+      const statusEl = document.getElementById('meta-status');
+      statusEl.textContent = st.text;
+      statusEl.className = 'meta-value ' + st.cls;
+
+      const allRecords = (data.products || []).reduce((sum, p) => sum + (p.stocks || []).length, 0);
+      document.getElementById('meta-count').textContent = allRecords + ' 条';
+
+      if (data.error_msg) {
+        document.getElementById('meta-error-wrap').style.display = '';
+        document.getElementById('meta-error').textContent = data.error_msg;
+      }
+
+      // 商品列表
+      const seriesOrder = ['Muses', 'Venus', 'Virgo', 'Lilith', 'Other'];
+      const grouped = {};
+      for (const s of seriesOrder) grouped[s] = [];
+      for (const p of (data.products || [])) {
+        const series = p.series || 'Other';
+        if (!grouped[series]) grouped[series] = [];
+        grouped[series].push(p);
+      }
+
+      let html = '';
+      for (const [series, items] of Object.entries(grouped)) {
+        if (items.length === 0) continue;
+        html += '<div class="series-group"><h3 class="series-title">' + esc(series) + ' 系列</h3><div class="product-grid">';
+        for (const p of items) {
+          html += renderProductCard(p);
+        }
+        html += '</div></div>';
+      }
+
+      document.getElementById('product-area').innerHTML = html || '<p style="color: var(--text-muted);">暂无数据</p>';
+    }
+
+    function renderProductCard(p) {
+      const hasError = !p.stocks || p.stocks.length === 0;
+      if (hasError) {
+        return '<div class="product-card error-card"><div class="card-header"><span class="product-name">' + esc(p.name) + '</span><span style="color: var(--red); font-size: 0.8rem;">获取失败</span></div><div class="error-detail">未能获取库存数据</div></div>';
+      }
+
+      const variantsHtml = p.stocks.map(function(s) {
+        return '<span class="variant-tag ' + (s.in_stock ? 'in-stock-tag' : 'out-of-stock-tag') + '"><span class="dot ' + (s.in_stock ? 'in-stock' : 'out-of-stock') + '"></span>' + esc(s.variant) + '</span>';
+      }).join('');
+
+      return '<div class="product-card"><div class="card-header"><span class="product-name"><a href="' + esc(p.url) + '" target="_blank">' + esc(p.name) + '</a></span><span class="stock-summary ' + (p.has_stock ? 'has-stock' : 'no-stock') + '">' + esc(p.summary) + '</span></div><div class="variants">' + variantsHtml + '</div></div>';
+    }
+
+    function esc(text) {
+      const el = document.createElement('span');
+      el.textContent = text || '';
+      return el.innerHTML;
+    }
+  </script>
+</body>
+</html>
