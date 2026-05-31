@@ -3,7 +3,7 @@
 """
 import asyncio
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 scheduler = AsyncIOScheduler()
 _scrape_lock = asyncio.Lock()
-_next_run_time: datetime | None = None
 
 
 def setup_scheduler(scrape_callback):
@@ -25,10 +24,7 @@ def setup_scheduler(scrape_callback):
     async def daily_job():
         await _run_with_lock(scrape_callback)
 
-    async def startup_job():
-        await _run_with_lock(scrape_callback)
-
-    # 每天中午 12:00 日本时间
+    # 每天中午 12:00 日本时间（每天仅执行一次）
     scheduler.add_job(
         daily_job,
         trigger=CronTrigger(
@@ -39,15 +35,6 @@ def setup_scheduler(scrape_callback):
         id="daily_noon_scrape",
         name="每天中午 12:00 自动检查库存",
         replace_existing=True,
-    )
-
-    # 启动后 30 秒执行一次首次抓取
-    scheduler.add_job(
-        startup_job,
-        trigger="date",
-        run_date=datetime.now() + timedelta(seconds=30),
-        id="startup_scrape",
-        name="启动时首次抓取",
     )
 
     scheduler.start()

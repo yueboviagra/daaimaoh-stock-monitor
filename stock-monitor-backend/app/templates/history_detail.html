@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>检查详情 - 大魔王库存监控</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="{{ root_path(request) }}/static/style.css">
   <style>
     .back-nav {
       margin-bottom: 24px;
@@ -50,13 +50,13 @@
   <nav class="navbar">
     <h1>🛒 大魔王库存监控</h1>
     <div class="nav-actions">
-      <a href="/" class="btn btn-outline" style="text-decoration:none;">← 返回仪表盘</a>
+      <a href="{{ root_path(request) }}/" class="btn btn-outline" style="text-decoration:none;">← 返回仪表盘</a>
     </div>
   </nav>
 
   <div class="container">
     <div class="back-nav">
-      <a href="/">← 返回仪表盘</a>
+      <a href="{{ root_path(request) }}/">← 返回仪表盘</a>
     </div>
 
     <h2 style="margin-bottom: 16px;">📋 检查详情</h2>
@@ -88,6 +88,9 @@
   </div>
 
   <script>
+    const ROOT = "{{ root_path(request) }}";
+    function api(path) { return ROOT + path; }
+
     const snapshotId = window.location.pathname.split('/').filter(Boolean).pop();
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -96,7 +99,7 @@
 
     async function loadDetail() {
       try {
-        const resp = await fetch('/api/history/' + snapshotId);
+        const resp = await fetch(api('/api/history/' + snapshotId));
         if (!resp.ok) {
           document.getElementById('product-area').innerHTML =
             '<p style="color: var(--red);">快照不存在或加载失败</p>';

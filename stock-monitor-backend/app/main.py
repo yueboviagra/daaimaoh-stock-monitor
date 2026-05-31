@@ -7,7 +7,8 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 
 from fastapi import FastAPI, Request, BackgroundTasks, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse
+from starlette.types import ASGIApp, Scope, Receive, Send
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -26,6 +27,28 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 templates = Jinja2Templates(directory="app/templates")
+
+
+class StripRootPathMiddleware:
+    """ASGI 中间件：剥离 root_path 前缀，让反向代理子路径正常工作"""
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] in ("http", "websocket"):
+            root_path = scope.get("root_path", "")
+            path = scope.get("path", "/")
+            if root_path and path.startswith(root_path):
+                scope["path"] = path[len(root_path):] or "/"
+        await self.app(scope, receive, send)
+
+
+def root_path(request: Request) -> str:
+    """获取根路径，用于模板中生成 URL"""
+    return request.scope.get("root_path", "")
+
+
+templates.env.globals["root_path"] = root_path
 
 
 # ====== 抓取回调（用于定时任务） ======
@@ -59,6 +82,9 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+# 添加根路径剥离中间件
+app.add_middleware(StripRootPathMiddleware)
 
 # 静态文件
 app.mount("/static", StaticFiles(directory="app/static"), name="static")

@@ -5,7 +5,7 @@ services:
     image: daimaoh-stock-monitor:latest
     container_name: daimaoh-stock-monitor
     ports:
-      - "8000:8000"
+      - "127.0.0.1:9000:8000"
     volumes:
       - ./data:/app/data
     environment:

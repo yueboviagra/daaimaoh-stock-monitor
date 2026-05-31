@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>大魔王库存监控</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="{{ root_path(request) }}/static/style.css">
 </head>
 <body>
   <!-- 顶部导航 -->
@@ -76,6 +76,9 @@
   </div>
 
   <script>
+    const ROOT = "{{ root_path(request) }}";
+    function api(path) { return ROOT + path; }
+
     // 页面加载时获取数据
     document.addEventListener('DOMContentLoaded', () => {
       loadStatus();
@@ -94,7 +97,7 @@
 
     async function loadStatus() {
       try {
-        const resp = await fetch('/api/status');
+        const resp = await fetch(api('/api/status'));
         if (!resp.ok) {
           document.getElementById('product-area').innerHTML =
             '<p style="color: var(--text-muted);">暂无数据，请点击「立即检查」开始首次抓取</p>';
@@ -109,7 +112,7 @@
 
     async function loadHistory() {
       try {
-        const resp = await fetch('/api/history?limit=20');
+        const resp = await fetch(api('/api/history?limit=20'));
         const data = await resp.json();
         renderHistory(data);
       } catch (e) {
@@ -119,7 +122,7 @@
 
     async function loadSchedule() {
       try {
-        const resp = await fetch('/api/schedule');
+        const resp = await fetch(api('/api/schedule'));
         const data = await resp.json();
         if (data.next_run) {
           const d = new Date(data.next_run);
@@ -138,7 +141,7 @@
       showLoading(true, '正在检查 14 个商品库存...');
 
       try {
-        const resp = await fetch('/api/scrape', { method: 'POST' });
+        const resp = await fetch(api('/api/scrape'), { method: 'POST' });
         const data = await resp.json();
         showLoading(false);
         btn.textContent = '▶ 立即检查';
@@ -239,7 +242,7 @@
 
     async function loadChanges() {
       try {
-        const resp = await fetch('/api/changes');
+        const resp = await fetch(api('/api/changes'));
         const changes = await resp.json();
         if (changes.length === 0) return;
 
@@ -276,7 +279,7 @@
           <td>${d.toLocaleString('ja-JP')}</td>
           <td style="color: ${statusClass}">${h.status}</td>
           <td>${h.record_count} 条</td>
-          <td><a href="/history/${h.id}" style="color: var(--accent);">详情</a></td>
+          <td><a href="${ROOT}/history/${h.id}" style="color: var(--accent);">详情</a></td>
         </tr>`;
       }).join('');
     }
