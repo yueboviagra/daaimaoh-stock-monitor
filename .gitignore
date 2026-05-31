@@ -15,4 +15,7 @@ __pycache__/
 *.egg-info/
 *.db
 venv/
-.venv/stock-monitor-backend/daimaoh-stock-monitor.tar
+.venv/
+
+# Docker 构建产物
+stock-monitor-backend/daimaoh-stock-monitor.tar
